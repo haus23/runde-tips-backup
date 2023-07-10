@@ -26,8 +26,5 @@
     "eslint": "^8.38.0",
     "typescript": "^5.0.4",
     "wrangler": "^3.1.1"
-  },
-  "engines": {
-    "node": ">=16.13.0"
   }
 }
