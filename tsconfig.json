@@ -1,22 +1,27 @@
 {
-  "include": ["remix.env.d.ts", "**/*.ts", "**/*.tsx"],
+  "include": ["**/*.ts", "**/*.tsx"],
+
   "compilerOptions": {
-    "lib": ["DOM", "DOM.Iterable", "ES2019"],
+    // Source
+    "lib": ["DOM", "DOM.Iterable", "ES2022"],
+    "jsx": "react-jsx",
+    "strict": true,
+    "verbatimModuleSyntax": true,
+
+    // Bundler
     "isolatedModules": true,
     "esModuleInterop": true,
-    "jsx": "react-jsx",
     "moduleResolution": "node",
     "resolveJsonModule": true,
-    "target": "ES2019",
-    "strict": true,
+    "target": "ES2022",
     "allowJs": true,
+
+    // Best practices
     "forceConsistentCasingInFileNames": true,
-    "baseUrl": ".",
+
+    // DX
     "paths": {
       "~/*": ["./app/*"]
-    },
-
-    // Remix takes care of building everything in `remix build`.
-    "noEmit": true
+    }
   }
 }

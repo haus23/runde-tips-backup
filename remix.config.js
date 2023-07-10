@@ -1,18 +1,21 @@
 /** @type {import('@remix-run/dev').AppConfig} */
 export default {
   devServerBroadcastDelay: 1000,
+
+  // Routing
   ignoredRouteFiles: ["**/.*"],
-  server: "./server.ts",
+
+  // Cloudflare Server
+  server: "./server/index.ts",
   serverBuildPath: "functions/[[path]].js",
   serverConditions: ["worker"],
   serverDependenciesToBundle: "all",
   serverMainFields: ["browser", "module", "main"],
   serverMinify: true,
-  serverModuleFormat: "esm",
   serverPlatform: "neutral",
-  // appDirectory: "app",
-  // assetsBuildDirectory: "public/build",
-  // publicPath: "/build/",
+  serverModuleFormat: "esm",
+
+  // V2 Opt-Ins
   future: {
     v2_dev: true,
     v2_errorBoundary: true,

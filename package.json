@@ -1,5 +1,12 @@
 {
-  "private": true,
+  "name": "@haus23/runde-tips",
+  "description": "Haus23 Tipprunde",
+  "license": "MIT",
+  "version": "0.0.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/haus23/runde-tips.git"
+  },
   "sideEffects": false,
   "type": "module",
   "scripts": {
@@ -21,6 +28,7 @@
     "@cloudflare/workers-types": "^3.19.0",
     "@remix-run/dev": "^1.18.1",
     "@remix-run/eslint-config": "^1.18.1",
+    "@types/node": "^20.4.1",
     "@types/react": "^18.0.35",
     "@types/react-dom": "^18.0.11",
     "eslint": "^8.38.0",

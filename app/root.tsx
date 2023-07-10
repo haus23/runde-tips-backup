@@ -1,5 +1,3 @@
-import type { LinksFunction } from "@remix-run/cloudflare";
-import { cssBundleHref } from "@remix-run/css-bundle";
 import {
   Links,
   LiveReload,
@@ -9,16 +7,14 @@ import {
   ScrollRestoration,
 } from "@remix-run/react";
 
-export const links: LinksFunction = () => [
-  ...(cssBundleHref ? [{ rel: "stylesheet", href: cssBundleHref }] : []),
-];
-
 export default function App() {
   return (
-    <html lang="en">
+    <html lang="de">
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width,initial-scale=1" />
+        <meta name="description" content="Tipprunde der Haus23 Freunde" />
+        <title>runde.tips</title>
         <Meta />
         <Links />
       </head>
