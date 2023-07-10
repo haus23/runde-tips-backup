@@ -1,9 +1,13 @@
 /** @type {import('@remix-run/dev').AppConfig} */
 export default {
-  devServerBroadcastDelay: 1000,
-
   // Routing
   ignoredRouteFiles: ["**/.*"],
+
+  // Features
+  tailwind: true,
+
+  // Dev Server
+  devServerBroadcastDelay: 1000,
 
   // Cloudflare Server
   server: "./server/index.ts",

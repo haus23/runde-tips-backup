@@ -1,7 +1,7 @@
 export default function IndexRoute() {
   return (
-    <div style={{ fontFamily: "system-ui, sans-serif", lineHeight: "1.8" }}>
-      <h1>runde.tips</h1>
+    <div className="container mx-auto mt-8">
+      <h1 className="text-3xl font-semibold">runde.tips</h1>
     </div>
   );
 }
