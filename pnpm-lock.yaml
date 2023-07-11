@@ -5,6 +5,12 @@ settings:
   excludeLinksFromLockfile: false
 
 dependencies:
+  '@conform-to/react':
+    specifier: ^0.7.2
+    version: 0.7.2(react@18.2.0)
+  '@conform-to/zod':
+    specifier: ^0.7.2
+    version: 0.7.2(@conform-to/dom@0.7.2)(zod@3.21.4)
   '@remix-run/node':
     specifier: ^1.18.1
     version: 1.18.1
@@ -26,6 +32,9 @@ dependencies:
   thirty-two:
     specifier: ^1.0.2
     version: 1.0.2
+  zod:
+    specifier: ^3.21.4
+    version: 3.21.4
 
 devDependencies:
   '@remix-run/dev':
@@ -1458,6 +1467,29 @@ packages:
     requiresBuild: true
     dev: true
     optional: true
+
+  /@conform-to/dom@0.7.2:
+    resolution: {integrity: sha512-iKPxU3TCWzvknHGRG9hPYZYTVcybsieOtzMIsmIOSsl1cPDsGD81ef7UxSh5tkV4/5tZVXNiYo1qyYSLL4FFEQ==}
+    dev: false
+
+  /@conform-to/react@0.7.2(react@18.2.0):
+    resolution: {integrity: sha512-cwCD6WmKBD2FzWyywWAC4OGEXWYB/50TZYpIu0JYMYAx4yRfYfMwZ8TuWA7IscuQFGE87YgSLNRn3VvZLfocsg==}
+    peerDependencies:
+      react: '>=16.8'
+    dependencies:
+      '@conform-to/dom': 0.7.2
+      react: 18.2.0
+    dev: false
+
+  /@conform-to/zod@0.7.2(@conform-to/dom@0.7.2)(zod@3.21.4):
+    resolution: {integrity: sha512-NPvuVfLN09P8D4SkLor6l9bCSAIWCB24Kco+Ift0NPTTBoEcl8VjPgENd6mw3bdMl4rJb0liXepRDOnFUYz1iA==}
+    peerDependencies:
+      '@conform-to/dom': 0.7.2
+      zod: ^3.21.0
+    dependencies:
+      '@conform-to/dom': 0.7.2
+      zod: 3.21.4
+    dev: false
 
   /@emotion/hash@0.9.1:
     resolution: {integrity: sha512-gJB6HLm5rYwSLI6PQa+X1t5CFGrv1J1TWG+sOyMCeKz2ojaj6Fnl/rZEspogG+cvqbt4AE/2eIyD2QfLKTBNlQ==}
@@ -9434,7 +9466,6 @@ packages:
 
   /zod@3.21.4:
     resolution: {integrity: sha512-m46AKbrzKVzOzs/DZgVnG5H55N1sv1M8qZU3A8RIKbs3mrACDNeIOeilDymVb2HdmP8uwshOCF4uJ8uM9rCqJw==}
-    dev: true
 
   /zwitch@2.0.4:
     resolution: {integrity: sha512-bXE4cR/kVZhKZX/RjPEflHaKVhUVl85noU3v6b8apfQEc1x4A+zBxjZ4lN8LqGd6WZ3dl98pY4o717VFmoPp+A==}
