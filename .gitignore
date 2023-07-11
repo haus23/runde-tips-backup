@@ -3,6 +3,5 @@ node_modules
 
 # Remix
 .cache/
-functions/\[\[path\]\].js
-functions/\[\[path\]\].js.map
+build/
 public/build/

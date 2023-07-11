@@ -1,7 +1,7 @@
-import { flatRoutes } from "remix-flat-routes";
+const { flatRoutes } = require("remix-flat-routes");
 
 /** @type {import('@remix-run/dev').AppConfig} */
-export default {
+module.exports = {
   // Routing
   ignoredRouteFiles: ["**/.*"],
   routes: async (defineRoutes) => {
@@ -11,18 +11,8 @@ export default {
   // Features
   tailwind: true,
 
-  // Dev Server
-  devServerBroadcastDelay: 1000,
-
-  // Cloudflare Server
-  server: "./server/index.ts",
-  serverBuildPath: "functions/[[path]].js",
-  serverConditions: ["worker"],
-  serverDependenciesToBundle: "all",
-  serverMainFields: ["browser", "module", "main"],
-  serverMinify: true,
-  serverPlatform: "neutral",
-  serverModuleFormat: "esm",
+  // V2 Opt-Out
+  serverModuleFormat: "cjs",
 
   // V2 Opt-Ins
   future: {
