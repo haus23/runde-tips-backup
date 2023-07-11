@@ -1,39 +1,45 @@
-import { useForm } from "@conform-to/react";
-import { parse } from "@conform-to/zod";
-import { json, type ActionArgs, redirect } from "@remix-run/node";
-import { Form, useActionData } from "@remix-run/react";
-import { z } from "zod";
-import { db, modelConverter } from "~/utils/server/db.server";
+import { useForm } from '@conform-to/react';
+import { parse } from '@conform-to/zod';
+import { json, type ActionArgs, redirect } from '@remix-run/node';
+import { Form, useActionData } from '@remix-run/react';
+import { z } from 'zod';
+import { getDomainUrl } from '~/utils/misc';
+import { db, modelConverter } from '~/utils/server/db.server';
+import { generateTOTP } from '~/utils/server/totp.server';
 
 const loginSchema = z.object({
   email: z
     .string()
-    .min(1, "Die Email-Adresse fehlt.")
-    .email("Ungültige Email-Adresse."),
+    .min(1, 'Die Email-Adresse fehlt.')
+    .email('Ungültige Email-Adresse.'),
 });
 
 type Account = {
   id: string;
   name: string;
   email: string;
+  otpSecret?: string;
+  secretExpiresAt?: string;
 };
 
 export async function action({ request }: ActionArgs) {
   let account: Account | undefined;
+
+  // Form Validation
   const formData = await request.formData();
   const submission = await parse(formData, {
     schema: loginSchema.superRefine(async (data, ctx) => {
       const qs = await db
-        .collection("accounts")
-        .where("email", "==", data.email)
+        .collection('accounts')
+        .where('email', '==', data.email)
         .limit(1)
         .withConverter(modelConverter<Account>())
         .get();
       if (qs.size !== 1) {
         ctx.addIssue({
-          path: ["email"],
+          path: ['email'],
           code: z.ZodIssueCode.custom,
-          message: "Unbekannte Email-Adresse",
+          message: 'Unbekannte Email-Adresse',
         });
       } else {
         account = qs.docs[0].data();
@@ -44,14 +50,31 @@ export async function action({ request }: ActionArgs) {
 
   if (
     !submission.value ||
-    submission.intent !== "submit" ||
+    submission.intent !== 'submit' ||
     account === undefined
   ) {
     return json(submission, { status: 400 });
   }
 
-  console.log(account);
-  return redirect("/login-code");
+  // Prepare account onboarding
+
+  const { otp, secret, period } = generateTOTP({
+    algorithm: 'SHA256',
+    period: 10 * 30,
+  });
+
+  account.otpSecret = secret;
+  account.secretExpiresAt = new Date(Date.now() + period * 1000).toISOString();
+
+  await db.doc(`accounts/${account.id}`).set(account);
+
+  const onboardingUrl = new URL(`${getDomainUrl(request)}/login-code`);
+  onboardingUrl.searchParams.set('email', account.email);
+  const redirectTo = new URL(onboardingUrl.toString());
+
+  onboardingUrl.searchParams.set('otp', otp);
+  console.log(otp);
+  return redirect(redirectTo.pathname + redirectTo.search);
 }
 
 export default function LoginRoute() {
