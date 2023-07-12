@@ -1,4 +1,4 @@
-import type { LinksFunction } from "@remix-run/cloudflare";
+import { json, type LinksFunction, type LoaderArgs } from '@remix-run/node';
 import {
   Links,
   LiveReload,
@@ -6,13 +6,19 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
-} from "@remix-run/react";
+} from '@remix-run/react';
 
-import stylesheet from "~/styles/tailwind.css";
+import stylesheet from '~/styles/tailwind.css';
+import { getUser } from './utils/server/auth.server';
 
 export const links: LinksFunction = () => [
-  { rel: "stylesheet", href: stylesheet },
+  { rel: 'stylesheet', href: stylesheet },
 ];
+
+export async function loader({ request }: LoaderArgs) {
+  const user = await getUser(request);
+  return json({ user });
+}
 
 export default function App() {
   return (
