@@ -47,7 +47,7 @@ type TOTPConfig = {
 
 function generateHOTP(
   secret: Buffer,
-  { counter = 0, digits = DEFAULT_DIGITS, algorithm = DEFAULT_ALGORITHM } = {}
+  { counter = 0, digits = DEFAULT_DIGITS, algorithm = DEFAULT_ALGORITHM } = {},
 ) {
   const byteCounter = Buffer.from(intToBytes(counter));
   const hmac = crypto.createHmac(algorithm, secret);
@@ -71,7 +71,7 @@ function verifyHOTP(
     digits = DEFAULT_DIGITS,
     algorithm = DEFAULT_ALGORITHM,
     window = DEFAULT_WINDOW,
-  } = {}
+  } = {},
 ) {
   for (let i = counter - window; i <= counter + window; ++i) {
     if (generateHOTP(secret, { counter: i, digits, algorithm }) === otp) {

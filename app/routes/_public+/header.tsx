@@ -12,7 +12,7 @@ const navItems = [
 export function Header() {
   const user = useOptionalUser();
   return (
-    <header className="h-16 px-1 border-b">
+    <header className="h-16 border-b px-1">
       {/* Desktop Nav */}
       <div className="flex h-full items-center gap-x-1">
         <nav className="flex grow items-center justify-between">

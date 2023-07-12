@@ -29,7 +29,7 @@ class OtpStrategy extends Strategy<User, OtpStrategyVerifyParams> {
   async authenticate(
     request: Request,
     sessionStorage: SessionStorage<SessionData, SessionData>,
-    options: AuthenticateOptions
+    options: AuthenticateOptions,
   ): Promise<User> {
     const form = await request.formData();
     const email = form.get('email');
@@ -48,7 +48,7 @@ class OtpStrategy extends Strategy<User, OtpStrategyVerifyParams> {
           request,
           sessionStorage,
           options,
-          error
+          error,
         );
       }
       return await this.failure(
@@ -56,7 +56,7 @@ class OtpStrategy extends Strategy<User, OtpStrategyVerifyParams> {
         request,
         sessionStorage,
         options,
-        new Error(JSON.stringify(error, null, 2))
+        new Error(JSON.stringify(error, null, 2)),
       );
     }
   }
@@ -104,7 +104,7 @@ authenticator.use(
 
     return user;
   }),
-  OtpStrategy.name
+  OtpStrategy.name,
 );
 
 async function clearSecretFromAccount(account: Account) {

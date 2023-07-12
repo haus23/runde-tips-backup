@@ -74,7 +74,7 @@ export async function action({ request }: ActionArgs) {
             },
           },
         } as const,
-        { status: 400 }
+        { status: 400 },
       );
     }
     throw error;

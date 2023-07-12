@@ -26,7 +26,7 @@ const app =
 const db = getFirestore(app);
 
 const modelConverter = <
-  T extends { id: string }
+  T extends { id: string },
 >(): FirestoreDataConverter<T> => ({
   toFirestore: (modelObject: PartialWithFieldValue<T>): DocumentData => {
     const { id, ...doc } = modelObject;
@@ -36,7 +36,7 @@ const modelConverter = <
     ({
       id: snapshot.id,
       ...snapshot.data(),
-    } as T),
+    }) as T,
 });
 
 export { db, modelConverter };
