@@ -29,6 +29,9 @@ dependencies:
   react-dom:
     specifier: ^18.2.0
     version: 18.2.0(react@18.2.0)
+  remix-auth:
+    specifier: ^3.5.0
+    version: 3.5.0(@remix-run/react@1.18.1)(@remix-run/server-runtime@1.18.1)
   resend:
     specifier: ^0.16.0
     version: 0.16.0
@@ -8299,6 +8302,17 @@ packages:
       unified: 10.1.2
     dev: true
 
+  /remix-auth@3.5.0(@remix-run/react@1.18.1)(@remix-run/server-runtime@1.18.1):
+    resolution: {integrity: sha512-+0kFPhqNPQ4mjhDXViY5mG4jvWHWMsG1IXFiCj3T58BKQGynonk93vTFZ5/CCDzGFBjTsRpcA+mXCUW5LY8MdQ==}
+    peerDependencies:
+      '@remix-run/react': ^1.0.0
+      '@remix-run/server-runtime': ^1.0.0
+    dependencies:
+      '@remix-run/react': 1.18.1(react-dom@18.2.0)(react@18.2.0)
+      '@remix-run/server-runtime': 1.18.1
+      uuid: 8.3.2
+    dev: false
+
   /remix-flat-routes@0.5.10(@remix-run/dev@1.18.1):
     resolution: {integrity: sha512-9pn3vx8q66wmWmaEEUDqFKobKVD6EtC9K/gsZsPAUfRVyzWfcS6GkPq9IKZm/nJ+7WuTpiDOVxvx2j22kbReXw==}
     hasBin: true
@@ -9350,7 +9364,6 @@ packages:
     resolution: {integrity: sha512-+NYs2QeMWy+GWFOEm9xnn6HCDp0l7QBD7ml8zLUmJ+93Q5NF0NocErnwkTkXVFNiX3/fpC6afS8Dhb/gz7R7eg==}
     hasBin: true
     dev: false
-    optional: true
 
   /uuid@9.0.0:
     resolution: {integrity: sha512-MXcSTerfPa4uqyzStbRoTgt5XIe3x5+42+q1sDuy3R5MDk66URdLMOZe5aPX/SQd+kuYAh0FdP/pO28IkQyTeg==}

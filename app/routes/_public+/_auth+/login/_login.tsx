@@ -12,8 +12,8 @@ import { generateTOTP } from '~/utils/server/totp.server';
 const loginSchema = z.object({
   email: z
     .string()
-    .min(1, 'Die Email-Adresse fehlt.')
-    .email('Ungültige Email-Adresse.'),
+    .min(1, 'Die Email-Adresse fehlt')
+    .email('Ungültige Email-Adresse'),
 });
 
 export async function action({ request }: ActionArgs) {
@@ -33,7 +33,7 @@ export async function action({ request }: ActionArgs) {
         ctx.addIssue({
           path: ['email'],
           code: z.ZodIssueCode.custom,
-          message: 'Unbekannte Email-Adresse.',
+          message: 'Unbekannte Email-Adresse',
         });
       } else {
         account = qs.docs[0].data();

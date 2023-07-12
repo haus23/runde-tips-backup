@@ -1,15 +1,23 @@
 import { conform, useForm } from '@conform-to/react';
 import { parse } from '@conform-to/zod';
-import { json, type ActionArgs, type LoaderArgs } from '@remix-run/node';
+import {
+  json,
+  type ActionArgs,
+  type LoaderArgs,
+  redirect,
+} from '@remix-run/node';
 import { Form, useActionData, useLoaderData } from '@remix-run/react';
+import { AuthorizationError } from 'remix-auth';
 import { z } from 'zod';
-import type { Account } from '~/model/Account';
-import { db, modelConverter } from '~/utils/server/db.server';
-import { verifyTOTP } from '~/utils/server/totp.server';
+import { OtpStrategy, authenticator } from '~/utils/server/auth.server';
+import { commitSession, getSession } from '~/utils/server/session.server';
 
 const loginCodeSchema = z.object({
-  email: z.string().email(),
-  otp: z.string().regex(/^\d{6}$/),
+  email: z
+    .string()
+    .min(1, 'Die Email-Adresse fehlt')
+    .email('Ungültige Email-Adresse'),
+  otp: z.string().regex(/^\d{6}$/, 'Code hat 6 Ziffern'),
 });
 
 export async function loader({ request }: LoaderArgs) {
@@ -26,99 +34,81 @@ export async function loader({ request }: LoaderArgs) {
       },
     } as const);
   }
-  return validate(request, params);
+  return json(validate(params));
 }
 
 export async function action({ request }: ActionArgs) {
-  return validate(request, await request.formData());
+  const result = validate(await request.clone().formData());
+
+  if (result.status !== 'success') {
+    return json(result);
+  }
+
+  try {
+    const user = await authenticator.authenticate(OtpStrategy.name, request, {
+      throwOnError: true,
+    });
+
+    const cookieSession = await getSession(request.headers.get('cookie'));
+    cookieSession.set('user', user);
+
+    const responseInit = {
+      headers: {
+        'Set-Cookie': await commitSession(cookieSession, {
+          // expires: remember ? session.expirationDate : undefined,
+        }),
+      },
+    };
+
+    return redirect('/', responseInit);
+  } catch (error) {
+    if (error instanceof AuthorizationError) {
+      return json(
+        {
+          status: 'error',
+          submission: {
+            ...result.submission,
+            error: {
+              // show authorization error as a form level error message.
+              '': error.message,
+            },
+          },
+        } as const,
+        { status: 400 }
+      );
+    }
+    throw error;
+  }
 }
 
-async function validate(request: Request, body: URLSearchParams | FormData) {
-  const submission = await parse(body, {
-    schema: () =>
-      loginCodeSchema.superRefine(async (data, ctx) => {
-        const qs = await db
-          .collection('accounts')
-          .where('email', '==', data.email)
-          .limit(1)
-          .withConverter(modelConverter<Account>())
-          .get();
-
-        if (qs.size !== 1) {
-          ctx.addIssue({
-            path: ['email'],
-            code: z.ZodIssueCode.custom,
-            message: `Unbekannte Email-Adresse.`,
-          });
-          return;
-        }
-
-        let account = qs.docs[0].data();
-
-        if (!account.secretExpiresAt || !account.otpSecret) {
-          ctx.addIssue({
-            path: ['email'],
-            code: z.ZodIssueCode.custom,
-            message: `Es liegt kein Anmeldeversuch vor.`,
-          });
-          return;
-        }
-
-        if (new Date().toISOString() > account.secretExpiresAt) {
-          ctx.addIssue({
-            path: ['email'],
-            code: z.ZodIssueCode.custom,
-            message: `Der Code ist schon abgelaufen.`,
-          });
-        }
-
-        const result = verifyTOTP({
-          otp: data.otp,
-          secret: account.otpSecret,
-          algorithm: 'SHA256',
-          period: 10 * 30,
-          window: 0,
-        });
-
-        if (!result) {
-          ctx.addIssue({
-            path: ['otp'],
-            code: z.ZodIssueCode.custom,
-            message: `Ungültiger Code`,
-          });
-          return;
-        }
-      }),
-    async: true,
-  });
+function validate(body: URLSearchParams | FormData) {
+  const submission = parse(body, { schema: loginCodeSchema });
 
   if (submission.intent !== 'submit') {
-    return json({ status: 'idle', submission } as const);
+    return { status: 'idle', submission } as const;
   }
 
   if (!submission.value) {
-    return json(
-      {
-        status: 'error',
-        submission,
-      } as const,
-      { status: 400 }
-    );
+    return {
+      status: 'error',
+      submission,
+    } as const;
   }
 
-  return json({ status: 'success', submission } as const);
+  return { status: 'success', submission } as const;
 }
 
 export default function LoginCodeRoute() {
   const loaderData = useLoaderData<typeof loader>();
   const actionData = useActionData<typeof action>();
-  console.log(loaderData.submission);
+
   const [form, { email, otp }] = useForm({
     lastSubmission: actionData?.submission ?? loaderData.submission,
     onValidate({ formData }) {
       return parse(formData, { schema: loginCodeSchema });
     },
   });
+  // TODO: FromConstraints??
 
   return (
     <div className="container mx-auto mt-8">
@@ -135,6 +125,7 @@ export default function LoginCodeRoute() {
           <input id="otp" type="text" {...conform.input(otp)} />
           <div>{otp.error}</div>
         </div>
+        <div>{form.error}</div>
         <button type="submit">Prüfen</button>
       </Form>
     </div>

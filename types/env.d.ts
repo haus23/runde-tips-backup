@@ -4,5 +4,6 @@ declare namespace NodeJS {
     FIREBASE_CLIENT_EMAIL: string;
     FIREBASE_PRIVATE_KEY: string;
     RESEND_API_KEY: string;
+    SESSION_SECRET: string;
   }
 }

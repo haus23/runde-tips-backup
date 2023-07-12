@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+// Firebase: 'accounts'
+
 export const Account = z.object({
   id: z.string(),
   name: z.string(),
