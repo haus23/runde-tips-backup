@@ -3,8 +3,10 @@ import { parse } from '@conform-to/zod';
 import { json, type ActionArgs, redirect } from '@remix-run/node';
 import { Form, useActionData } from '@remix-run/react';
 import { z } from 'zod';
+import type { Account } from '~/model/Account';
 import { getDomainUrl } from '~/utils/misc';
 import { db, modelConverter } from '~/utils/server/db.server';
+import { sendEmail } from '~/utils/server/email.server';
 import { generateTOTP } from '~/utils/server/totp.server';
 
 const loginSchema = z.object({
@@ -13,14 +15,6 @@ const loginSchema = z.object({
     .min(1, 'Die Email-Adresse fehlt.')
     .email('Ungültige Email-Adresse.'),
 });
-
-type Account = {
-  id: string;
-  name: string;
-  email: string;
-  otpSecret?: string;
-  secretExpiresAt?: string;
-};
 
 export async function action({ request }: ActionArgs) {
   let account: Account | undefined;
@@ -39,7 +33,7 @@ export async function action({ request }: ActionArgs) {
         ctx.addIssue({
           path: ['email'],
           code: z.ZodIssueCode.custom,
-          message: 'Unbekannte Email-Adresse',
+          message: 'Unbekannte Email-Adresse.',
         });
       } else {
         account = qs.docs[0].data();
@@ -73,8 +67,20 @@ export async function action({ request }: ActionArgs) {
   const redirectTo = new URL(onboardingUrl.toString());
 
   onboardingUrl.searchParams.set('otp', otp);
-  console.log(otp);
-  return redirect(redirectTo.pathname + redirectTo.search);
+
+  const response = await sendEmail({
+    to: `${account.name} <${account.email}>`,
+    subject: `Tipprunde Login`,
+    html: '',
+    text: `Zum Einloggen den Code ${otp} nutzen oder den Link ${onboardingUrl.toString()}`,
+  });
+
+  if (response.status === 'success') {
+    return redirect(redirectTo.pathname + redirectTo.search);
+  } else {
+    submission.error['email'] = 'Fehler beim Email-Versand.';
+    return json(submission, { status: 500 });
+  }
 }
 
 export default function LoginRoute() {

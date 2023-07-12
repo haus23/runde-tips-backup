@@ -1,4 +1,4 @@
-import { Outlet } from "@remix-run/react";
+import { Outlet } from '@remix-run/react';
 
 export default function PublicLayout() {
   return (
@@ -7,7 +7,7 @@ export default function PublicLayout() {
         <h1 className="text-2xl font-semibold">runde.tips</h1>
       </header>
       <main>
-        <Outlet />;
+        <Outlet />
       </main>
     </>
   );
