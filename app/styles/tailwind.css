@@ -3,10 +3,17 @@
 @tailwind utilities;
 
 @layer base {
+  :root {
+    --color-foreground: 260 25% 11%; /* mauve-12 */
+    --color-background: 0 0 100%; /* white */
+    --color-invalid: 358 65% 48.7%; /* red-11 */
+    --color-border: 278 4.1% 89.1%; /* mauve-6 */
+  }
+
   * {
-    @apply border-zinc-300;
+    @apply border-border;
   }
   body {
-    @apply bg-white text-black;
+    @apply bg-background text-foreground;
   }
 }

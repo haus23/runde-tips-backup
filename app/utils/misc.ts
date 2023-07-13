@@ -1,3 +1,10 @@
+import { clsx, type ClassValue } from 'clsx';
+import { twMerge } from 'tailwind-merge';
+
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs));
+}
+
 export function getDomainUrl(request: Request) {
   const host =
     request.headers.get('X-Forwarded-Host') ?? request.headers.get('host');
