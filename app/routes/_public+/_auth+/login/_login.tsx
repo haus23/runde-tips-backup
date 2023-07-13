@@ -79,6 +79,9 @@ export async function loader({ request }: DataFunctionArgs) {
 export async function action({ request }: DataFunctionArgs) {
   const formData = await request.clone().formData();
 
+  const params = new URL(request.url).searchParams;
+  const redirectTo = params.get('redirectTo') || '/';
+
   let account: Account | undefined;
   const submission = await parse(formData, {
     schema: loginSchema.superRefine(async (data, ctx) => {
@@ -145,7 +148,7 @@ export async function action({ request }: DataFunctionArgs) {
           }),
         },
       };
-      return redirect('/', responseInit);
+      return redirect(redirectTo, responseInit);
     } catch (error) {
       if (error instanceof AuthorizationError) {
         // Fehler, zurück zum ersten Schritt
