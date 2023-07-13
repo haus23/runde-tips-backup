@@ -6,6 +6,7 @@ export const Account = z.object({
   id: z.string(),
   name: z.string(),
   email: z.string().email(),
+  role: z.literal('ADMIN').or(z.literal('USER')),
   otpSecret: z.string().optional(),
   secretExpiresAt: z.string().optional(),
 });

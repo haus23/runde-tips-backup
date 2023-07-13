@@ -1,4 +1,8 @@
-import type { SessionStorage, SessionData } from '@remix-run/node';
+import {
+  type SessionStorage,
+  type SessionData,
+  redirect,
+} from '@remix-run/node';
 import { Authenticator, Strategy, type AuthenticateOptions } from 'remix-auth';
 import { type User } from '~/model/User';
 import { sessionStorage } from './session.server';
@@ -66,7 +70,10 @@ export async function createLoginCode(account: Account) {
 
 export async function requireUser(
   request: Request,
-  { redirectTo }: { redirectTo?: string | null } = {},
+  {
+    redirectTo,
+    role,
+  }: { redirectTo?: string | null; role?: Account['role'] | null } = {},
 ) {
   const requestUrl = new URL(request.url);
   redirectTo =
@@ -83,6 +90,10 @@ export async function requireUser(
   const user = await authenticator.isAuthenticated(request, {
     failureRedirect,
   });
+
+  if (role && user.role !== role) {
+    throw redirect(failureRedirect);
+  }
 
   return user;
 }
@@ -164,7 +175,12 @@ authenticator.use(
       throw new Error('Ungültiger Code. Du musst einen neuen anfordern.');
     }
 
-    const user = { id: account.id, name: account.name, email: account.email };
+    const user = {
+      id: account.id,
+      name: account.name,
+      email: account.email,
+      role: account.role,
+    };
 
     return user;
   }),
