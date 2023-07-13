@@ -64,6 +64,29 @@ export async function createLoginCode(account: Account) {
   return otp;
 }
 
+export async function requireUser(
+  request: Request,
+  { redirectTo }: { redirectTo?: string | null } = {},
+) {
+  const requestUrl = new URL(request.url);
+  redirectTo =
+    redirectTo === null
+      ? null
+      : redirectTo ?? `${requestUrl.pathname}${requestUrl.search}`;
+  const loginParams = redirectTo
+    ? new URLSearchParams([['redirectTo', redirectTo]])
+    : null;
+  const failureRedirect = ['/login', loginParams?.toString()]
+    .filter(Boolean)
+    .join('?');
+
+  const user = await authenticator.isAuthenticated(request, {
+    failureRedirect,
+  });
+
+  return user;
+}
+
 class OtpStrategy extends Strategy<User, OtpStrategyVerifyParams> {
   name = 'otp';
 

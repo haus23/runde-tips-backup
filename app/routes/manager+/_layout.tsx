@@ -1,4 +1,12 @@
+import { json, type LoaderArgs } from '@remix-run/node';
 import { Outlet } from '@remix-run/react';
+import { requireUser } from '~/utils/server/auth.server';
+
+export async function loader({ request }: LoaderArgs) {
+  const user = await requireUser(request);
+
+  return json({ user });
+}
 
 export default function ManagerLayout() {
   return (
