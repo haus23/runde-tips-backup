@@ -1,7 +1,7 @@
 import { conform, useForm } from '@conform-to/react';
 import { getFieldsetConstraint, parse } from '@conform-to/zod';
 import { json, type DataFunctionArgs, redirect } from '@remix-run/node';
-import { Form, useActionData, useLoaderData } from '@remix-run/react';
+import { useActionData, useLoaderData } from '@remix-run/react';
 import { useEffect } from 'react';
 import { AuthorizationError } from 'remix-auth';
 import { z } from 'zod';
@@ -150,7 +150,7 @@ export async function action({ request }: DataFunctionArgs) {
       if (error instanceof AuthorizationError) {
         // Fehler, zurück zum ersten Schritt
         submission.intent = 'request-code';
-        submission.value.otp = undefined;
+
         return json(
           {
             ...submission,
@@ -183,6 +183,13 @@ export default function LoginRoute() {
   });
 
   useEffect(() => {
+    // Little bit weird
+    // Falls der Nutzer einen Login-Code anfordert, dann aber einen alten Link
+    // benutzt und damit dessen ungültigen Code, wurde nach dem Neu-Anfordern
+    // immer noch der letzte (falsche) Code sofort angezeigt.
+    // Es musste hier sowohl der Code aus dem Query-String entfernt werden und
+    // außerdem nicht die Remix Form Komponente genutzt werden. Die hätte nämlich
+    // wieder auf die alte URL den POST gemacht.
     if (form.error) {
       const url = new URL(location.href);
       url.searchParams.delete('otp');

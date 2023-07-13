@@ -130,11 +130,11 @@ authenticator.use(
     }
 
     const result = verifyTOTP({
-      otp: otp,
+      otp,
       secret: account.otpSecret,
       algorithm: 'SHA256',
       period: 10 * 30,
-      window: 0,
+      window: 1,
     });
 
     if (!result) {
