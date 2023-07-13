@@ -5,7 +5,7 @@ import { sessionStorage } from './session.server';
 import { invariant } from '../misc';
 import { db, modelConverter } from './db.server';
 import type { Account } from '~/model/Account';
-import { verifyTOTP } from './totp.server';
+import { generateTOTP, verifyTOTP } from './totp.server';
 
 type OtpStrategyVerifyParams = {
   email: string;
@@ -16,11 +16,52 @@ const authenticator = new Authenticator<User>(sessionStorage, {
   sessionKey: 'user',
 });
 
-const emailParam = 'email';
-const otpParam = 'otp';
-
 export async function getUser(request: Request) {
   return await authenticator.isAuthenticated(request);
+}
+
+export async function findAccountByEmail(email: string) {
+  const qs = await db
+    .collection('accounts')
+    .where('email', '==', email)
+    .limit(1)
+    .withConverter(modelConverter<Account>())
+    .get();
+
+  return qs.size === 1 ? qs.docs[0].data() : undefined;
+}
+
+export async function ensureCodeRequest(email: string) {
+  const qs = await db
+    .collection('accounts')
+    .where('email', '==', email)
+    .limit(1)
+    .withConverter(modelConverter<Account>())
+    .get();
+
+  if (qs.size !== 1) {
+    return false;
+  }
+
+  const account = qs.docs[0].data();
+  if (!account.otpSecret || !account.secretExpiresAt) {
+    return false;
+  }
+
+  return true;
+}
+
+export async function createLoginCode(account: Account) {
+  const { otp, secret, period } = generateTOTP({
+    algorithm: 'SHA256',
+    period: 10 * 30,
+  });
+
+  account.otpSecret = secret;
+  account.secretExpiresAt = new Date(Date.now() + period * 1000).toISOString();
+  await db.doc(`accounts/${account.id}`).set(account);
+
+  return otp;
 }
 
 class OtpStrategy extends Strategy<User, OtpStrategyVerifyParams> {
@@ -71,20 +112,21 @@ authenticator.use(
       .withConverter(modelConverter<Account>())
       .get();
 
-    if (qs.size !== 1) {
-      throw new Error('Unbekannte Email-Adresse');
-    }
-
     let account = qs.docs[0].data();
 
+    // Clear secret from account (if any)
+    // Due to security issues only one try is allowed
+    const { otpSecret, secretExpiresAt, ...clearedAccount } = account;
+    await db.doc(`accounts/${account.id}`).set(clearedAccount);
+
     if (!account.secretExpiresAt || !account.otpSecret) {
-      clearSecretFromAccount(account);
-      throw new Error('Es liegt kein Anmeldeversuch vor');
+      throw new Error('Es liegt kein Anmeldeversuch vor.');
     }
 
     if (new Date().toISOString() > account.secretExpiresAt) {
-      clearSecretFromAccount(account);
-      throw new Error('Code ist abgelaufen');
+      throw new Error(
+        'Dieser Code ist abgelaufen. Du musst einen neuen anfordern.',
+      );
     }
 
     const result = verifyTOTP({
@@ -96,10 +138,9 @@ authenticator.use(
     });
 
     if (!result) {
-      throw new Error('Ungültiger Code');
+      throw new Error('Ungültiger Code. Du musst einen neuen anfordern.');
     }
 
-    clearSecretFromAccount(account);
     const user = { id: account.id, name: account.name, email: account.email };
 
     return user;
@@ -107,16 +148,4 @@ authenticator.use(
   OtpStrategy.name,
 );
 
-async function clearSecretFromAccount(account: Account) {
-  const { otpSecret, secretExpiresAt, ...clearedAccount } = account;
-  await db.doc(`accounts/${account.id}`).set(clearedAccount);
-}
-
-export {
-  authenticator,
-  emailParam,
-  otpParam,
-  OtpStrategy,
-  type User,
-  type OtpStrategyVerifyParams,
-};
+export { authenticator, OtpStrategy, type User, type OtpStrategyVerifyParams };
